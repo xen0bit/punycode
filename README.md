@@ -159,6 +159,27 @@ nfc_str = unicodedata.normalize('NFC', '例え')
 assert to_ascii(nfd_str) == to_ascii(nfc_str)
 ```
 
+## Examples
+
+Comprehensive example scripts are available in the `examples/` directory:
+
+```bash
+# Basic Punycode encoding/decoding
+python examples/basic_usage.py
+
+# IDNA domain name conversion
+python examples/idna_domains.py
+
+# Low-level Bootstring API
+python examples/bootstring_lowlevel.py
+
+# Error handling patterns
+python examples/error_handling.py
+
+# Advanced usage scenarios
+python examples/advanced_usage.py
+```
+
 ## Testing
 
 Run the full test suite:

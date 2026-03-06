@@ -77,12 +77,44 @@ def to_ascii(label: str) -> str:
     return result
 
 
-# CHAOS AGENT DISRUPTION: to_unicode() function deleted (27 lines)
-# This function handled IDNA label decoding including:
-# - ACE prefix validation
-# - Punycode decoding
-# - NFC normalization
-# The builder must re-implement to restore IDNA decoding functionality
+def to_unicode(label: str) -> str:
+    """
+    Convert an ASCII label to Unicode using IDNA (Punycode decoding).
+
+    Args:
+        label: ASCII domain label to decode (may include ACE prefix)
+
+    Returns:
+        Unicode label with decoded characters, normalized to NFC form
+
+    Raises:
+        InvalidLabel: If the label is invalid for IDNA processing
+    """
+    if not label:
+        raise InvalidLabel("Empty label")
+
+    # Normalize to lowercase for case-insensitive decoding (per IDNA spec)
+    label = label.lower()
+
+    # Check if it has the ACE prefix
+    if not label.startswith(ACE_PREFIX):
+        # Not an ACE label, return as-is
+        return label
+
+    # Remove ACE prefix
+    encoded = label[len(ACE_PREFIX):]
+
+    if not encoded:
+        raise InvalidLabel("Empty encoded label after ACE prefix")
+
+    # Decode using Punycode
+    decoded = decode(encoded)
+
+    # Normalize to NFC form (per IDNA2008 recommendation)
+    result = unicodedata.normalize('NFC', decoded)
+
+    return result
+
 
 def to_ascii_domain(domain: str) -> str:
     """
