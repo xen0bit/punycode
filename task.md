@@ -17,3 +17,18 @@ This section tracks enhancement suggestions from the chaos agent during resilien
   4. Add unit tests for each extracted function
   5. Apply similar refactoring to `to_ascii_domain()` for consistency
 - **Status**: Pending
+
+### Enhancement: Optimize Bootstring.adapt() with Lookup Table
+- **Category**: Performance
+- **Priority**: Medium
+- **Suggested**: 2026-03-06T04:30:00Z
+- **Disrupted Unit**: Implement Bootstring algorithm core functions
+- **Why Important**: The adapt() function is called frequently during encoding/decoding operations for each code point processed. A lookup table approach could significantly reduce computational overhead by avoiding repeated integer divisions and multiplications in the while loop.
+- **High-Level Plan**:
+  1. Profile current adapt() performance with typical inputs
+  2. Analyze the delta range and numpoints patterns in real-world usage
+  3. Design a precomputed lookup table for common delta/numpoints combinations
+  4. Implement fast-path lookup with fallback to computation for edge cases
+  5. Add benchmarks to measure performance improvement
+  6. Ensure table accuracy with comprehensive tests
+- **Status**: Pending

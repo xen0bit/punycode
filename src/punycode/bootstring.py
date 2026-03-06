@@ -30,33 +30,9 @@ class Bootstring:
     INITIAL_N = 0x80
     DELIMITER = "-"
 
-    @staticmethod
-    def adapt(delta: int, numpoints: int, firsttime: bool) -> int:
-        """
-        Adapt the bias for the next delta.
-
-        Args:
-            delta: The delta value to adapt from
-            numpoints: Number of code points processed so far
-            firsttime: True if this is the first delta
-
-        Returns:
-            The new bias value
-        """
-        if firsttime:
-            delta //= Bootstring.DAMP
-        else:
-            delta //= 2
-
-        delta += delta // numpoints
-
-        k = 0
-        while delta > ((Bootstring.BASE - Bootstring.TMIN) * Bootstring.TMAX) // 2:
-            delta //= (Bootstring.BASE - Bootstring.TMIN)
-            k += Bootstring.BASE
-
-        return k + (((Bootstring.BASE - Bootstring.TMIN + 1) * delta) //
-                    (delta + Bootstring.SKEW))
+    # CHAOS AGENT SUGGESTION: Performance
+    # Consider enhancing with: Adapt function could be optimized with precomputed bias lookup table
+    # Rationale: The adapt function is called frequently during encoding/decoding; a lookup table could reduce computational overhead
 
     @staticmethod
     def digit_value(cp: int) -> int | None:
@@ -116,3 +92,51 @@ class Bootstring:
             True if basic, False otherwise
         """
         return 0x00 <= cp <= 0x7F
+
+    @staticmethod
+    def adapt(delta: int, numpoints: int, firsttime: bool) -> int:
+        """
+        Adapt bias using the Bootstring algorithm.
+
+        This function adjusts the bias based on the current delta and the
+        number of code points processed so far. It's called during both
+        encoding and decoding after each delta is processed.
+
+        Args:
+            delta: The current delta value
+            numpoints: The number of code points processed so far
+            firsttime: True if this is the first delta, False otherwise
+
+        Returns:
+            The adapted bias value
+
+        RFC 3492 Section 6.1:
+            function adapt(delta,numpoints,firsttime):
+              if firsttime then let delta = delta div damp
+              else let delta = delta div 2
+              let delta = delta + (delta div numpoints)
+              let k = 0
+              while delta > ((base - tmin) * tmax) div 2 do begin
+                let delta = delta div (base - tmin)
+                let k = k + base
+              end
+              return k + (((base - tmin + 1) * delta) div (delta + skew))
+        """
+        # Scale delta
+        if firsttime:
+            delta = delta // Bootstring.DAMP
+        else:
+            delta = delta // 2
+
+        # Increase delta to compensate for longer strings
+        delta += delta // numpoints
+
+        # Repeatedly divide until delta falls within threshold
+        k = 0
+        threshold = ((Bootstring.BASE - Bootstring.TMIN) * Bootstring.TMAX) // 2
+        while delta > threshold:
+            delta = delta // (Bootstring.BASE - Bootstring.TMIN)
+            k += Bootstring.BASE
+
+        # Calculate and return the adjusted bias
+        return k + ((Bootstring.BASE - Bootstring.TMIN + 1) * delta) // (delta + Bootstring.SKEW)

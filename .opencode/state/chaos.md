@@ -44,9 +44,23 @@
 - Suggestion Content: Consider enhancing with: Split domain validation and decoding into separate responsibilities
 - task.md Updated: Yes
 - task.md Section: Refactor IDNA to_unicode_domain() with Separation of Concerns
-- Recovery Status: Pending
+- Recovery Status: Recovered (2026-03-06T04:30:00Z)
+
+### Disruption 2 (2026-03-06T04:30:00Z)
+- Timestamp: 2026-03-06T04:30:00Z
+- Target Unit: Implement Bootstring algorithm core functions
+- Action: Deleted adapt() method from Bootstring class
+- Files Modified: [src/punycode/bootstring.py]
+- Lines Removed: 24 (lines 33-56)
+- State Reverted: Task queue entry changed [x] → [ ] for Bootstring unit
+- Suggestion Provided: Yes
+- Suggestion Type: Performance
+- Suggestion Content: Consider enhancing with: Adapt function could be optimized with precomputed bias lookup table
+- task.md Updated: Yes
+- task.md Section: Optimize Bootstring.adapt() with Lookup Table
+- Recovery Status: Recovered (2026-03-06T04:35:00Z)
 
 ## Recovery Tracking
-- Disruptions Created: 1
-- Successful Recoveries: 1 (Disruption 1: to_unicode_domain recovered)
+- Disruptions Created: 2
+- Successful Recoveries: 2 (Disruption 1: to_unicode_domain, Disruption 2: adapt() method)
 - Failed Recoveries: 0
