@@ -48,3 +48,18 @@ This section tracks enhancement suggestions from the chaos agent during resilien
   6. Add microbenchmarks to measure improvement for typical use cases
   7. Ensure RFC 3492 compliance with optimized implementation
 - **Status**: Pending
+
+### Enhancement: Improve to_unicode() Error Handling and Edge Cases
+- **Category**: Code Quality
+- **Priority**: Medium
+- **Suggested**: 2026-03-06T06:05:00Z
+- **Disrupted Unit**: Add Unicode normalization support (NFC/NFD)
+- **Why Important**: The to_unicode() function handles ACE prefix detection, Punycode decoding, and NFC normalization together. By enhancing error handling to provide more specific messages for edge cases (invalid ACE prefixes, malformed punycode, normalization failures), we can improve debugging experience and catch issues earlier.
+- **High-Level Plan**:
+  1. Add specific exception types for different failure modes (InvalidACE, MalformedPunycode, NormalizationError)
+  2. Validate ACE prefix format more strictly (check for xn-- prefix and valid characters)
+  3. Add validation that decoded result is valid Unicode after normalization
+  4. Improve error messages to include the input value and reason for failure
+  5. Add dedicated unit tests for each error path
+  6. Document error conditions in the function docstring
+- **Status**: Pending

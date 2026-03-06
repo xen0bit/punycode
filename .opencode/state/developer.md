@@ -16,7 +16,7 @@
 - [x] Initialize punycode package structure (pyproject.toml, src/punycode/)
 - [x] Implement basic punycode decoding (RFC 3492) - RECOVERED at 2026-03-06T06:00:00Z
 - [x] Implement Bootstring algorithm core functions
-- [x] Add Unicode normalization support (NFC/NFD)
+- [ ] Add Unicode normalization support (NFC/NFD) - DISRUPTED at 2026-03-06T06:05:00Z
 - [x] Implement Domain name conversion (IDNA)
 - [x] Implement basic punycode encoding (RFC 3492) - COMPLETED
 - [x] Add comprehensive test suite (54 tests passing)
@@ -55,11 +55,10 @@ punycode/
 ```
 
 ## Last Action
-- **RECOVERY COMPLETED**: Reimplemented decode() function from scratch per RFC 3492
-- Recovered at 2026-03-06T06:00:00Z
-- Implementation: 90 lines restored with proper case-preservation logic
-- State updated: punycode decoding unit marked complete [x]
-- All 54 tests passing
+- **CHAOS DISRUPTION**: to_unicode() function deleted from src/punycode/idna.py
+- Disrupted at 2026-03-06T06:05:00Z
+- State reverted: Unicode normalization unit marked incomplete [ ]
+- Function removed included NFC normalization logic
 
 ## Test Results
 - **Total Tests**: 54

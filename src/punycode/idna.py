@@ -77,34 +77,12 @@ def to_ascii(label: str) -> str:
     return result
 
 
-def to_unicode(label: str) -> str:
-    """
-    Convert an ASCII domain label to Unicode using IDNA (Punycode decoding).
-
-    Args:
-        label: ASCII domain label to decode (may have ACE prefix)
-
-    Returns:
-        Decoded Unicode label
-
-    Raises:
-        InvalidLabel: If the label is invalid
-    """
-    if not label:
-        raise InvalidLabel("Empty label")
-
-    # Check for ACE prefix
-    if not label.lower().startswith(ACE_PREFIX):
-        # Not an ACE label, return as-is
-        return label
-
-    # Remove ACE prefix and decode
-    encoded = label[4:]  # Skip 'xn--'
-    decoded = decode(encoded)
-
-    # Normalize to NFC form
-    return unicodedata.normalize('NFC', decoded)
-
+# CHAOS AGENT DISRUPTION: to_unicode() function deleted (27 lines)
+# This function handled IDNA label decoding including:
+# - ACE prefix validation
+# - Punycode decoding
+# - NFC normalization
+# The builder must re-implement to restore IDNA decoding functionality
 
 def to_ascii_domain(domain: str) -> str:
     """
