@@ -128,7 +128,7 @@ def encode(input_str: str) -> str:
 
 def decode(input_str: str) -> str:
     """
-    Decode a Punycode string to Unicode (RFC 3492).
+    Decode a Punycode-encoded string to Unicode (RFC 3492).
 
     Args:
         input_str: Punycode-encoded ASCII string
@@ -138,57 +138,58 @@ def decode(input_str: str) -> str:
 
     Raises:
         InvalidInput: If input contains invalid characters
-        Overflow: If decoding would cause integer overflow
+        Overflow: If integer overflow would occur
     """
     if not input_str:
         return ""
 
-    # Convert input to code points
-    input_cp = [ord(c) for c in input_str]
+    # Keep the original case for literal portion, but use uppercase for digit lookup
+    # Find the last delimiter
+    last_delimiter_pos = input_str.rfind(Bootstring.DELIMITER)
+
+    # Initialize output with basic code points (everything before last delimiter)
+    # Preserve original case in the literal portion
+    output = []
+    if last_delimiter_pos != -1:
+        for i in range(last_delimiter_pos):
+            c = input_str[i]
+            cp = ord(c)
+            # Validate that all characters before delimiter are basic code points
+            if not Bootstring.is_basic(cp):
+                raise InvalidInput("Non-basic code point before delimiter")
+            output.append(cp)
 
     # Initialize decoding state
     n = Bootstring.INITIAL_N
     i = 0
     bias = Bootstring.INITIAL_BIAS
-    output = []
 
-    # Find the last delimiter
-    delimiter_index = len(input_cp) - 1
-    while delimiter_index >= 0 and input_cp[delimiter_index] != ord(Bootstring.DELIMITER):
-        delimiter_index -= 1
-
-    # Process literal portion (all code points before the last delimiter)
-    if delimiter_index >= 0:
-        # Copy all basic code points before the last delimiter
-        for cp in input_cp[:delimiter_index]:
-            if not Bootstring.is_basic(cp):
-                raise InvalidInput(f"Non-basic code point in literal portion: U+{cp:04X}")
-            output.append(cp)
-        # The encoded portion starts after the last delimiter
-        input_cp = input_cp[delimiter_index + 1:]
-    else:
-        # No delimiter, so no literal portion
-        input_cp = input_cp[:]  # All characters are encoded
-
-    # Decode deltas
-    while input_cp:
-        oldi = i
+    # Process the remainder of the input (after the last delimiter, or all if no delimiter)
+    input_pos = last_delimiter_pos + 1
+    while input_pos < len(input_str):
+        # Decode one delta
+        old_i = i
         w = 1
-        k = Bootstring.BASE
-
-        while True:
-            if not input_cp:
+        for k in range(Bootstring.BASE, Bootstring.BASE + 1000, Bootstring.BASE):
+            # Consume a code point
+            if input_pos >= len(input_str):
                 raise InvalidInput("Unexpected end of input")
 
-            cp = input_cp.pop(0)
+            c = input_str[input_pos]
+            input_pos += 1
+
+            # Get digit value (case-insensitive - use uppercase)
+            cp = ord(c.upper())
             digit = Bootstring.digit_value(cp)
             if digit is None:
-                raise InvalidInput(f"Invalid digit: {chr(cp)} (U+{cp:04X})")
+                raise InvalidInput(f"Invalid character in encoded data: {c}")
 
-            i += digit * w
-            if i > 0x7FFFFFFF:
+            # Accumulate into i, checking for overflow
+            if i > (0x7FFFFFFF - digit * w) // 1:
                 raise Overflow("Integer overflow")
+            i += digit * w
 
+            # Calculate threshold
             if k <= bias:
                 t = Bootstring.TMIN
             elif k >= bias + Bootstring.TMAX:
@@ -199,20 +200,29 @@ def decode(input_str: str) -> str:
             if digit < t:
                 break
 
-            w *= (Bootstring.BASE - t)
-            if w > 0x7FFFFFFF:
+            # Update weight, checking for overflow
+            if w > 0x7FFFFFFF // (Bootstring.BASE - t):
                 raise Overflow("Integer overflow")
+            w *= (Bootstring.BASE - t)
 
-            k += Bootstring.BASE
+        # Adapt bias
+        bias = Bootstring.adapt(i - old_i, len(output) + 1, old_i == 0)
 
-        bias = Bootstring.adapt(i - oldi, len(output) + 1, oldi == 0)
-        n += i // (len(output) + 1)
-        if n > 0x10FFFF:
-            raise Overflow("Code point exceeds maximum Unicode value")
+        # Calculate the new code point
+        if n > 0x7FFFFFFF - i // (len(output) + 1):
+            raise Overflow("Integer overflow")
+        n = n + i // (len(output) + 1)
+
         i = i % (len(output) + 1)
 
+        # Insert the new code point
         output.insert(i, n)
         i += 1
 
     # Convert code points to string
     return "".join(chr(cp) for cp in output)
+
+
+# CHAOS AGENT SUGGESTION: Performance
+# Consider enhancing with: Optimize main encoding loop using list comprehensions and precomputed bias values
+# Rationale: Could improve encoding performance for large strings by reducing loop overhead
