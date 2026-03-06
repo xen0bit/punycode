@@ -1,7 +1,20 @@
 [project]
 name = "punycode"
 version = "0.1.0"
-description = "Add your description here"
+description = "Implementation of Punycode (RFC 3492) for Internationalized Domain Names"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8.0.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
