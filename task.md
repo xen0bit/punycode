@@ -32,3 +32,19 @@ This section tracks enhancement suggestions from the chaos agent during resilien
   5. Add benchmarks to measure performance improvement
   6. Ensure table accuracy with comprehensive tests
 - **Status**: Pending
+
+### Enhancement: Optimize encode() Main Loop Performance
+- **Category**: Performance
+- **Priority**: High
+- **Suggested**: 2026-03-06T04:40:00Z
+- **Disrupted Unit**: Implement basic punycode encoding (RFC 3492)
+- **Why Important**: The encode() function's main encoding loop processes Unicode strings with nested loops that iterate over input_cp multiple times. For large strings with many non-ASCII characters, this O(n²) behavior can become a bottleneck. Current implementation uses generator expressions and min() inside the loop.
+- **High-Level Plan**:
+  1. Profile encode() performance with strings of varying lengths (10, 100, 1000+ characters)
+  2. Identify hot paths in the encoding loop (likely the min() operation and nested iterations)
+  3. Pre-sort or pre-process input_cp to enable more efficient minimum code point finding
+  4. Consider using bitmask or bitset operations for encoding deltas
+  5. Optimize delta compression using more efficient variable-length integer encoding
+  6. Add microbenchmarks to measure improvement for typical use cases
+  7. Ensure RFC 3492 compliance with optimized implementation
+- **Status**: Pending

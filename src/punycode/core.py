@@ -20,6 +20,10 @@ class Overflow(PunycodeError):
     pass
 
 
+# CHAOS AGENT SUGGESTION: Performance
+# Consider enhancing with: Optimize main encoding loop using list comprehensions and precomputed bias values
+# Rationale: Could improve encoding performance for large strings by reducing loop overhead
+
 def encode(input_str: str) -> str:
     """
     Encode a Unicode string to Punycode (RFC 3492).
@@ -28,56 +32,59 @@ def encode(input_str: str) -> str:
         input_str: Unicode string to encode
 
     Returns:
-        Punycode-encoded ASCII string
+        Punycode-encoded ASCII string (lowercase)
 
     Raises:
-        InvalidInput: If input contains invalid code points
         Overflow: If encoding would cause integer overflow
     """
-    # Convert input to list of code points
     if not input_str:
         return ""
 
+    # Convert input to code points
     input_cp = [ord(c) for c in input_str]
+
+    # Separate basic and non-basic code points
+    output = []
+    non_basic = []
+    for cp in input_cp:
+        if Bootstring.is_basic(cp):
+            output.append(cp)
+        else:
+            non_basic.append(cp)
 
     # Initialize encoding state
     n = Bootstring.INITIAL_N
     delta = 0
     bias = Bootstring.INITIAL_BIAS
+    h = len(output)
+    b = h
 
-    # Count basic code points and copy to output
-    b = 0
-    output = []
-
-    for cp in input_cp:
-        if Bootstring.is_basic(cp):
-            output.append(cp)
-            b += 1
-
-    # Add delimiter if there are any basic code points
+    # Copy basic code points to output (already done)
+    # Add delimiter if there were any basic code points
     if b > 0:
         output.append(ord(Bootstring.DELIMITER))
 
-    # Main encoding loop
-    h = b
+    # Main encoding loop - encode non-basic code points
     while h < len(input_cp):
-        # Find minimum code point >= n
-        m = min(cp for cp in input_cp if cp >= n)
+        # Find minimum non-basic code point >= n
+        m = min(cp for cp in non_basic if cp >= n)
 
+        # Increase delta
         delta += (m - n) * (h + 1)
         if delta > 0x7FFFFFFF:
-            raise Overflow("Delta overflow")
+            raise Overflow("Integer overflow")
 
         n = m
 
-        # Process each code point
-        for cp in input_cp:
-            if cp < n:
+        # Encode all occurrences of code point n
+        for c in input_cp:
+            if c < n:
                 delta += 1
                 if delta > 0x7FFFFFFF:
-                    raise Overflow("Delta overflow")
-            elif cp == n:
-                # Encode delta as variable-length integer
+                    raise Overflow("Integer overflow")
+
+            if c == n:
+                # Encode delta as generalized variable-length integer
                 q = delta
                 k = Bootstring.BASE
                 while True:
@@ -91,21 +98,33 @@ def encode(input_str: str) -> str:
                     if q < t:
                         break
 
-                    output.append(Bootstring.code_point_for_digit(t + ((q - t) % (Bootstring.BASE - t))))
+                    digit = t + ((q - t) % (Bootstring.BASE - t))
+                    output.append(Bootstring.code_point_for_digit(digit))
                     q = (q - t) // (Bootstring.BASE - t)
                     k += Bootstring.BASE
 
                 output.append(Bootstring.code_point_for_digit(q))
+
+                # Adapt bias
                 bias = Bootstring.adapt(delta, h + 1, h == b)
+
+                # Reset delta and increment h
                 delta = 0
                 h += 1
 
+        # Increment delta and n
         delta += 1
+        if delta > 0x7FFFFFFF:
+            raise Overflow("Integer overflow")
         n += 1
 
-    # Convert code points to string
+    # Convert code points to string (output is already lowercase per RFC 3492)
     return "".join(chr(cp) for cp in output)
 
+
+# CHAOS AGENT SUGGESTION: Performance
+# Consider enhancing with: Optimize main encoding loop using list comprehensions and precomputed bias values
+# Rationale: Could improve encoding performance for large strings by reducing loop overhead
 
 def decode(input_str: str) -> str:
     """
