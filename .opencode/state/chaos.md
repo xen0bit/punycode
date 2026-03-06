@@ -2,8 +2,8 @@
 
 ## Session Info
 - Started: 2026-03-05T23:11:00Z
-- Total Disruptions: 0
-- Current Iteration: 2
+- Total Disruptions: 1
+- Current Iteration: 4
 
 ## Protected Paths
 - Configuration: pyproject.toml
@@ -32,7 +32,21 @@
 - Reason: Builder state shows all tasks pending ([ ]) - no units marked [x]
 - Action: Exiting without disruption
 
+### Disruption 1 (2026-03-06T04:26:50Z)
+- Timestamp: 2026-03-06T04:26:50Z
+- Target Unit: Implement Domain name conversion (IDNA)
+- Action: Deleted to_unicode_domain() function
+- Files Modified: [src/punycode/idna.py]
+- Lines Removed: 30 (lines 151-180)
+- State Reverted: Task queue entry changed [x] → [ ] for IDNA unit
+- Suggestion Provided: Yes
+- Suggestion Type: Architecture
+- Suggestion Content: Consider enhancing with: Split domain validation and decoding into separate responsibilities
+- task.md Updated: Yes
+- task.md Section: Refactor IDNA to_unicode_domain() with Separation of Concerns
+- Recovery Status: Pending
+
 ## Recovery Tracking
-- Disruptions Created: 0
-- Successful Recoveries: 0
+- Disruptions Created: 1
+- Successful Recoveries: 1 (Disruption 1: to_unicode_domain recovered)
 - Failed Recoveries: 0

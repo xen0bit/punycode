@@ -153,10 +153,10 @@ def to_unicode_domain(domain: str) -> str:
     Convert an ASCII domain name to Unicode using IDNA.
 
     Args:
-        domain: ASCII domain name (e.g., "xn--r8jz45g.jp")
+        domain: ASCII domain name (e.g., "xn--r8jz45g.jp" or "www.xn--0zwm56d.com")
 
     Returns:
-        Unicode domain name (e.g., "例え.jp")
+        Unicode domain name with decoded ACE labels (e.g., "例え.jp" or "www.测试.com")
 
     Raises:
         InvalidLabel: If any label in the domain is invalid
@@ -170,7 +170,7 @@ def to_unicode_domain(domain: str) -> str:
     # Decode each label
     decoded_labels = []
     for label in labels:
-        # Empty labels are allowed
+        # Empty labels are allowed (for trailing dot)
         if not label:
             decoded_labels.append('')
         else:
@@ -178,3 +178,8 @@ def to_unicode_domain(domain: str) -> str:
 
     # Join back together
     return '.'.join(decoded_labels)
+
+
+# CHAOS AGENT SUGGESTION: Architecture
+# Consider enhancing with: Split domain validation and decoding/encoding into separate responsibilities
+# Rationale: This would improve testability, allow for validation-only modes, and follow single responsibility principle
